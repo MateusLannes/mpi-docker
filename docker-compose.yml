@@ -1,0 +1,42 @@
+version: '3'
+services:
+  master:
+    build: .
+    container_name: mpi_master
+    command: bash -c "service ssh start && mpiexec --oversubscribe -n 4 python3 /app/mpi.py"
+    environment:
+      - OMPI_ALLOW_RUN_AS_ROOT=1
+      - OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    volumes:
+      - ./shared:/app
+    networks:
+      - mpi_network
+    ports:
+      - "2222:22"
+
+  worker1:
+    build: .
+    container_name: mpi_worker1
+    volumes:
+      - ./shared:/app
+    networks:
+      - mpi_network
+    ports:
+      - "2223:22"
+
+  worker2:
+    build: .
+    container_name: mpi_worker2
+    volumes:
+      - ./shared:/app
+    networks:
+      - mpi_network
+    ports:
+      - "2224:22"
+
+networks:
+  mpi_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
